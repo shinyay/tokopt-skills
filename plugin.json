@@ -1,0 +1,25 @@
+{
+  "name": "tokopt-skills",
+  "description": "Token-optimization skills and agents for the tokopt CLI. Adds the @token-doctor orchestrator agent, the @prompt-optimizer propose-only critic, and nine on-demand skills (token-audit, prompt-anatomy, antipattern-scan, heavy-tail, slim-suggest, slim-apply, slim-rewind, hygiene-coach, prompt-optimizer) so Copilot CLI can measure, diagnose, and remediate token consumption in any Copilot/agent repository.",
+  "version": "0.1.0",
+  "author": {
+    "name": "shinyay"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/shinyay/tokopt-skills",
+  "keywords": [
+    "token-optimization",
+    "tokopt",
+    "copilot-cli",
+    "agent-skills",
+    "slim",
+    "measurement",
+    "audit"
+  ],
+  "skills": [
+    "./skills"
+  ],
+  "agents": [
+    "./agents"
+  ]
+}
