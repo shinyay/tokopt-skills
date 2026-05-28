@@ -148,7 +148,7 @@ These skills + agents started life inside [`shinyay/getting-started-with-token-o
 
 `tokopt-skills` is the **CLI distribution package** extracted from that work — small, focused, and `copilot plugin install`-able. The tutorial repository remains the place to learn _why_ and _how_ each skill works; this repository is the place to just _use_ them.
 
-> Looking for VS Code Copilot Chat support? See [`shinyay/tokopt-vscode`](https://github.com/shinyay/tokopt-vscode) (companion package using `.github/prompts/` and `.github/chatmodes/` conventions).
+> **VS Code Copilot Chat user?** See the companion package [`shinyay/tokopt-vscode`](https://github.com/shinyay/tokopt-vscode) — same 9 skills + 2 agents in `.github/agents/` + `.github/skills/` layout, plus 4 `.prompt.md` slash-command wrappers (`/token-audit`, `/prompt-anatomy`, `/slim-suggest`, `/slim-apply`). One install script handles workspace OR user-profile scope.
 
 ---
 
