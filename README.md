@@ -106,6 +106,42 @@ always-on   0 tokens       (no copilot-instructions.md installed by this plugin)
 
 ---
 
+## ⚠️ Known limitations (Copilot CLI ≥ 1.0.55)
+
+These are **upstream Copilot CLI issues**, not bugs in this plugin. Tracked publicly:
+
+### 1. Plugin loader expects unprefixed directory name ([repro](https://github.com/github/copilot-cli/issues/3546))
+
+`copilot plugin install shinyay/tokopt-skills` creates
+`~/.copilot/installed-plugins/_direct/shinyay--tokopt-skills/` (GitHub
+shorthand convention), but the loader resolves plugin dirs by the
+`plugin.json` `name` field (`tokopt-skills`). Result: install succeeds,
+nothing loads.
+
+**Workaround** — add a symlink with the bare plugin name:
+
+```bash
+cd ~/.copilot/installed-plugins/_direct
+ln -sf shinyay--tokopt-skills tokopt-skills
+# Restart Copilot CLI; /skills should now list 8 tokopt-* entries
+```
+
+### 2. `slim-apply` silently dropped from `/skills list` ([#3546](https://github.com/github/copilot-cli/issues/3546))
+
+After applying workaround 1, **8 of the 9 skills appear**; `slim-apply` is
+silently dropped despite the install summary reporting all 9 loaded.
+Root cause unknown (closed-source binary). Disproved hypotheses: frontmatter
+format, BOM, description length, `DO NOT`/`Destructive` keyword filters.
+
+**Impact** — `slim-apply` is unreachable via natural-language match.
+`@token-doctor` will still call `tokopt slim --apply` directly when needed,
+so the destructive-write workflow remains usable; only the standalone
+auto-trigger of the skill is affected.
+
+Track upstream resolution at <https://github.com/github/copilot-cli/issues/3546>.
+
+---
+
 ## 🙋 Where this comes from
 
 These skills + agents started life inside [`shinyay/getting-started-with-token-optimization`](https://github.com/shinyay/getting-started-with-token-optimization) — a tutorial / reference / hands-on workshop repository covering the full theory and practice of token optimisation across 14 chapters.
