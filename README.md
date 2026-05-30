@@ -27,6 +27,32 @@ copilot plugin install shinyay/tokopt-skills
 
 Verify: `copilot plugin list | grep tokopt-skills`
 
+### Step 3 — (optional) Enable shell completions
+
+Tab-completion for `tokopt` subcommands and flag values (`--format`, `--encoding`). Pick your shell — each command is idempotent and installs **per-user** (no `sudo`):
+
+```bash
+# bash (Linux)
+mkdir -p ~/.local/share/bash-completion/completions \
+  && tokopt completion bash > ~/.local/share/bash-completion/completions/tokopt
+
+# zsh — ensure ~/.zshrc has `autoload -U compinit && compinit`, then:
+mkdir -p ~/.zsh/completions \
+  && tokopt completion zsh > ~/.zsh/completions/_tokopt \
+  && fpath+=(~/.zsh/completions)   # add this line to ~/.zshrc
+
+# fish
+mkdir -p ~/.config/fish/completions \
+  && tokopt completion fish > ~/.config/fish/completions/tokopt.fish
+
+# PowerShell — add to $PROFILE:
+tokopt completion powershell | Out-String | Invoke-Expression
+```
+
+Just want it for the current shell session? `source <(tokopt completion bash)` (or `zsh`/`fish` equivalent).
+
+Full per-shell guide (incl. macOS bash-completion v2 caveat and `--no-descriptions` for terser zsh/fish output): [tokopt CLI README → Shell completions](https://github.com/shinyay/getting-started-with-token-optimization/tree/main/tools/tokopt#shell-completions).
+
 ---
 
 ## ✨ What you get
