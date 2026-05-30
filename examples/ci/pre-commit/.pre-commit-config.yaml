@@ -1,0 +1,41 @@
+# Drop-in pre-commit configuration for token-budget gating.
+#
+# Copy the `repos:` block into your existing .pre-commit-config.yaml,
+# then run `pre-commit install` once to wire it into git.
+#
+# Two recipes — pick one:
+#
+#   1. INLINE (zero files to check in, no missing-binary error message)
+#   2. WRAPPER (uses tools/ci/token-budget.sh from this directory — better UX)
+#
+# Both gate commits that push always-on token tax over the threshold.
+# Both require the `tokopt` binary on PATH:
+#   curl -fsSL https://raw.githubusercontent.com/shinyay/tokopt/main/scripts/install.sh | sh
+
+repos:
+  # ─── RECIPE 1: INLINE (minimal) ──────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: tokopt-token-budget-inline
+        name: tokopt token-budget (inline)
+        entry: tokopt report --threshold 1500 .
+        language: system
+        pass_filenames: false
+        # Re-run when customization files OR the hook configuration itself changes.
+        files: '(^AGENTS\.md$|^\.github/|^\.copilot/|\.md$|^\.pre-commit-config\.ya?ml$)'
+
+  # ─── RECIPE 2: WRAPPER (recommended) ─────────────────────────────────────
+  # Copy token-budget.sh from this directory to tools/ci/token-budget.sh in
+  # your repo (and `chmod +x`). To override the threshold inline, wrap the
+  # entry in `env`:  `entry: env TOKOPT_THRESHOLD=2000 tools/ci/token-budget.sh`
+  # (pre-commit does not invoke `entry` through a shell, so `KEY=value cmd`
+  # syntax will NOT work without `env`).
+  #
+  # - repo: local
+  #   hooks:
+  #     - id: tokopt-token-budget
+  #       name: tokopt token-budget (wrapper)
+  #       entry: tools/ci/token-budget.sh
+  #       language: system
+  #       pass_filenames: false
+  #       files: '(^AGENTS\.md$|^\.github/|^\.copilot/|\.md$|^\.pre-commit-config\.ya?ml$|^tools/ci/token-budget\.sh$)'
