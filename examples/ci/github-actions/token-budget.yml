@@ -1,0 +1,99 @@
+name: token-budget
+
+# Drop-in token-tax gate for repos using shinyay/tokopt-skills.
+#
+# Copy this file to .github/workflows/token-budget.yml in your repo. It runs
+# on every PR and push to main and fails the build if your always-on Copilot
+# token tax (copilot-instructions.md, AGENTS.md, *.agent.md, etc.) exceeds
+# the configured threshold.
+#
+# IMPORTANT: CI does not need the tokopt-skills Copilot CLI plugin. It uses
+# the tokopt CLI binary directly. The plugin is only for interactive Copilot
+# workflows on developer machines.
+#
+# Tuning:
+#   • Inline: edit the `env:` block below.
+#   • Manual run: use the workflow_dispatch inputs in the Actions tab UI.
+#   • Reusable (org-wide): call this workflow via `uses:` and pass inputs.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      threshold:
+        description: 'Always-on token tax ceiling (tokens)'
+        type: string
+        default: '1500'
+      budget-mode:
+        description: 'Behavior when threshold is exceeded'
+        type: choice
+        options: [fail, warn]
+        default: fail
+      tokopt-version:
+        description: 'Pin to a specific tokopt release (e.g. v0.1.0). Leave empty for latest.'
+        type: string
+        default: ''
+  workflow_call:
+    inputs:
+      threshold:
+        type: string
+        default: '1500'
+      budget-mode:
+        type: string
+        default: fail
+      tokopt-version:
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+env:
+  # ─── Tunable defaults (override via inputs for manual/reusable runs) ────
+  TOKOPT_THRESHOLD: ${{ inputs.threshold || '1500' }}
+  TOKOPT_BUDGET_MODE: ${{ inputs.budget-mode || 'fail' }}
+  # Empty TOKOPT_VERSION installs the latest release. Pin (e.g. v0.1.0) for
+  # reproducible CI. See https://github.com/shinyay/tokopt/releases for tags.
+  TOKOPT_VERSION: ${{ inputs.tokopt-version || '' }}
+
+jobs:
+  token-budget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Validate budget-mode
+        run: |
+          case "$TOKOPT_BUDGET_MODE" in
+            fail|warn) echo "budget-mode=$TOKOPT_BUDGET_MODE" ;;
+            *)
+              echo "::error::TOKOPT_BUDGET_MODE must be 'fail' or 'warn' (got: '$TOKOPT_BUDGET_MODE')"
+              exit 1
+              ;;
+          esac
+
+      - name: Install tokopt
+        run: |
+          if [ -n "$TOKOPT_VERSION" ]; then
+            curl -fsSL https://raw.githubusercontent.com/shinyay/tokopt/main/scripts/install.sh \
+              | sh -s -- --version "$TOKOPT_VERSION"
+          else
+            curl -fsSL https://raw.githubusercontent.com/shinyay/tokopt/main/scripts/install.sh | sh
+          fi
+          tokopt --version
+
+      - name: Audit (informational — always run)
+        run: tokopt audit .
+
+      - name: Gate (fail if over budget)
+        if: env.TOKOPT_BUDGET_MODE == 'fail'
+        run: tokopt report --threshold "$TOKOPT_THRESHOLD" .
+
+      - name: Gate (warn-only — annotate but don't fail)
+        if: env.TOKOPT_BUDGET_MODE == 'warn'
+        run: |
+          if ! tokopt report --threshold "$TOKOPT_THRESHOLD" .; then
+            echo "::warning::tokopt token-budget exceeded (threshold=$TOKOPT_THRESHOLD); mode=warn so CI will continue"
+          fi

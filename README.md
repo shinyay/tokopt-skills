@@ -110,6 +110,24 @@ Copilot, このリポジトリの token を audit して
 
 ---
 
+## 🚦 Use it in your CI
+
+Want to enforce a token-tax budget on every PR or git commit in your own repo? Drop-in recipes for **GitHub Actions** and **pre-commit** live in [`examples/ci/`](examples/ci/):
+
+```bash
+# 1. Add a token-budget gate to your repo's CI
+mkdir -p /path/to/your-repo/.github/workflows
+cp examples/ci/github-actions/token-budget.yml \
+   /path/to/your-repo/.github/workflows/
+
+# 2. Or add a pre-commit hook for instant local feedback
+#    (see examples/ci/README.md for full pre-commit setup)
+```
+
+CI uses the `tokopt` binary directly — **the Copilot CLI plugin is not required in CI**. See [`examples/ci/README.md`](examples/ci/README.md) for tunable knobs (`threshold`, `budget-mode`, `tokopt-version`), pre-commit recipes, and maintenance tips.
+
+---
+
 ## 💸 Token cost of the plugin itself
 
 This plugin's own footprint, measured with `tokopt audit`:
