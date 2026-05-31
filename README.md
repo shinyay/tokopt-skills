@@ -150,39 +150,72 @@ always-on   0 tokens       (no copilot-instructions.md installed by this plugin)
 
 ---
 
-## ⚠️ Known limitations (Copilot CLI ≥ 1.0.55)
+## ⚠️ Known limitations
 
-These are **upstream Copilot CLI issues**, not bugs in this plugin. Tracked publicly:
+These are **upstream Copilot CLI issues**, not bugs in this plugin. Tracked publicly at <https://github.com/github/copilot-cli/issues/3546>.
 
-### 1. Plugin loader expects unprefixed directory name ([repro](https://github.com/github/copilot-cli/issues/3546))
+### 1. Plugin loader directory resolution — ✅ fixed in Copilot CLI 1.0.57+
+
+**Status: resolved upstream** (re-verified 2026-05-31 on `GitHub Copilot CLI 1.0.57-2`).
 
 `copilot plugin install shinyay/tokopt-skills` creates
 `~/.copilot/installed-plugins/_direct/shinyay--tokopt-skills/` (GitHub
-shorthand convention), but the loader resolves plugin dirs by the
-`plugin.json` `name` field (`tokopt-skills`). Result: install succeeds,
-nothing loads.
+shorthand convention). On CLI **1.0.55 / 1.0.56**, the loader resolved
+plugin dirs by the `plugin.json` `name` field (`tokopt-skills`) instead
+of the actual directory name, so install succeeded but nothing loaded.
 
-**Workaround** — add a symlink with the bare plugin name:
+On CLI **1.0.57+** the loader uses the saved `cache_path` from
+`~/.copilot/config.json` and finds skills correctly with no symlink.
+
+<details>
+<summary>Legacy workaround (only for CLI 1.0.55 / 1.0.56)</summary>
 
 ```bash
 cd ~/.copilot/installed-plugins/_direct
 ln -sf shinyay--tokopt-skills tokopt-skills
-# Restart Copilot CLI; /skills should now list 8 tokopt-* entries
+# Restart Copilot CLI
 ```
+
+If you are on 1.0.57+ you can **safely remove** any leftover symlink:
+
+```bash
+rm ~/.copilot/installed-plugins/_direct/tokopt-skills
+```
+
+</details>
 
 ### 2. `slim-apply` silently dropped from `/skills list` ([#3546](https://github.com/github/copilot-cli/issues/3546))
 
-After applying workaround 1, **8 of the 9 skills appear**; `slim-apply` is
-silently dropped despite the install summary reporting all 9 loaded.
-Root cause unknown (closed-source binary). Disproved hypotheses: frontmatter
-format, BOM, description length, `DO NOT`/`Destructive` keyword filters.
+**Status: still reproduces on 1.0.57-2** (re-verified 2026-05-31). After the
+loader fix above, **8 of the 9 skills appear**; `slim-apply` is silently
+dropped despite the install summary reporting all 9 loaded. Root cause
+unknown (closed-source binary). Disproved hypotheses: frontmatter format,
+BOM, description length, `DO NOT`/`Destructive` keyword filters.
 
 **Impact** — `slim-apply` is unreachable via natural-language match.
 `@token-doctor` will still call `tokopt slim --apply` directly when needed,
 so the destructive-write workflow remains usable; only the standalone
 auto-trigger of the skill is affected.
 
-Track upstream resolution at <https://github.com/github/copilot-cli/issues/3546>.
+### 3. Namespace collision risk in `/skills list`
+
+The CLI installs plugins under `_direct/<owner>--<repo>/` (namespace-safe at
+the filesystem level), but `/skills list` displays skills by **bare name**
+(`prompt-optimizer`) without a `<plugin>:` prefix. Agents already render as
+`<plugin-name>:<agent-name>` (`tokopt-skills:prompt-optimizer`); skills do
+not.
+
+**Impact** — if you install another plugin that also exposes a skill named
+`prompt-optimizer` (or any of the other 9 names in this plugin), `/skills list`
+will show two identical-looking rows with no disambiguation. The autonomous
+matcher may then pick either at random.
+
+**Mitigation** — until upstream qualifies skill names in the listing, prefer
+the explicit agent invocation (`@token-doctor`, `@prompt-optimizer`) when you
+need a guarantee about which implementation runs. The 9 skill names are
+intentionally specific (`tokopt-` style prefixes were considered and rejected
+to keep natural-language matching strong), so practical collisions are rare
+today but possible as the plugin ecosystem grows.
 
 ---
 

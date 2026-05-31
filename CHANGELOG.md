@@ -7,7 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(empty)_
+### Docs
+
+- **Known limitations refresh** ([README.md](README.md#%EF%B8%8F-known-limitations))
+  re-verified all upstream Copilot CLI issues against
+  `GitHub Copilot CLI 1.0.57-2`:
+  - **#1 plugin loader directory resolution** — marked **✅ fixed in
+    1.0.57+**; symlink workaround moved into a collapsed `<details>` block
+    for legacy 1.0.55 / 1.0.56 users only.
+  - **#2 `slim-apply` silently dropped** — confirmed still reproducing
+    identically on 1.0.57-2.
+  - **#3 namespace collision in `/skills list`** — new section documenting
+    the risk that bare skill names (e.g., `prompt-optimizer`) collide if
+    multiple plugins ship the same name, and recommending agent
+    invocation (`@token-doctor`, `@prompt-optimizer`) when disambiguation
+    matters. Filed upstream as a follow-on to
+    [#3546](https://github.com/github/copilot-cli/issues/3546#issuecomment-4585423585).
 
 ## [0.2.0] — 2026-05-30
 
