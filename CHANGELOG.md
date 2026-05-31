@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-05-31
+
+### Fixed
+
+- **`slim-apply` silently dropped from `/skills list`**
+  ([skills/slim-apply/SKILL.md](skills/slim-apply/SKILL.md)) — the
+  `description` field was an unquoted YAML plain scalar that contained
+  `: ` (colon + space) inside the prose (`...with full safety: requires
+  clean git tree...`). Strict YAML 1.2 parsers, including Copilot CLI's
+  loader, treat `: ` as a mapping-key indicator and rejected the
+  frontmatter with `mapping values are not allowed here`, so the skill
+  was silently dropped from `/skills list`. The fix wraps the entire
+  description in double-quotes — no content change. Root cause analysis
+  validated by `python3 -c "import yaml; yaml.safe_load(...)"` against
+  both old and new frontmatter. **This was not a Copilot CLI bug.**
+- README "Known limitations" section 2 rewritten to retract the
+  earlier "unknown root cause" claim and document the YAML fix.
+
 ### Docs
 
 - **Known limitations refresh** ([README.md](README.md#%EF%B8%8F-known-limitations))
@@ -15,8 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **#1 plugin loader directory resolution** — marked **✅ fixed in
     1.0.57+**; symlink workaround moved into a collapsed `<details>` block
     for legacy 1.0.55 / 1.0.56 users only.
-  - **#2 `slim-apply` silently dropped** — confirmed still reproducing
-    identically on 1.0.57-2.
+  - **#2 `slim-apply` silently dropped** — root cause identified
+    (YAML frontmatter) and fixed in 0.2.1 (see above).
   - **#3 namespace collision in `/skills list`** — new section documenting
     the risk that bare skill names (e.g., `prompt-optimizer`) collide if
     multiple plugins ship the same name, and recommending agent
@@ -134,6 +152,7 @@ Copilot CLI plugin install path without cloning the (much larger)
 
 This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow [Semantic Versioning](https://semver.org).
 
-[Unreleased]: https://github.com/shinyay/tokopt-skills/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/shinyay/tokopt-skills/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/shinyay/tokopt-skills/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/shinyay/tokopt-skills/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/shinyay/tokopt-skills/releases/tag/v0.1.0

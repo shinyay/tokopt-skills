@@ -1,6 +1,6 @@
 ---
 name: slim-apply
-description: Apply tokopt slim's compression IN-PLACE after the user has reviewed a slim-suggest preview AND explicitly approved. Writes compressed output back to disk with full safety: requires clean git tree, refuses symlinks, detects races. Use ONLY when the prior turn ran slim-suggest for the SAME single file. Never for first-pass analysis.
+description: "Apply tokopt slim's compression IN-PLACE after the user has reviewed a slim-suggest preview AND explicitly approved. Writes compressed output back to disk with full safety: requires clean git tree, refuses symlinks, detects races. Use ONLY when the prior turn ran slim-suggest for the SAME single file. Never for first-pass analysis."
 ---
 
 # slim-apply
