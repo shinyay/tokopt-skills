@@ -184,18 +184,31 @@ rm ~/.copilot/installed-plugins/_direct/tokopt-skills
 
 </details>
 
-### 2. `slim-apply` silently dropped from `/skills list` ([#3546](https://github.com/github/copilot-cli/issues/3546))
+### 2. `slim-apply` silently dropped from `/skills list` — ✅ fixed in 0.2.1
 
-**Status: still reproduces on 1.0.57-2** (re-verified 2026-05-31). After the
-loader fix above, **8 of the 9 skills appear**; `slim-apply` is silently
-dropped despite the install summary reporting all 9 loaded. Root cause
-unknown (closed-source binary). Disproved hypotheses: frontmatter format,
-BOM, description length, `DO NOT`/`Destructive` keyword filters.
+**Status: resolved in this plugin** (v0.2.1, 2026-05-31).
 
-**Impact** — `slim-apply` is unreachable via natural-language match.
-`@token-doctor` will still call `tokopt slim --apply` directly when needed,
-so the destructive-write workflow remains usable; only the standalone
-auto-trigger of the skill is affected.
+Earlier releases (≤ 0.2.0) shipped `skills/slim-apply/SKILL.md` with an
+**unquoted YAML plain scalar** in the `description` field that contained a
+`: ` (colon + space) inside the prose:
+
+```yaml
+description: ...with full safety: requires clean git tree, refuses symlinks...
+                              ^^ unquoted ': ' = YAML mapping-key indicator
+```
+
+Strict YAML 1.2 parsers (Copilot CLI's loader included) reject the file
+with `mapping values are not allowed here`, so the skill was silently
+dropped from `/skills list`. The other 8 skill descriptions did not
+contain `: ` so they loaded fine — which is why the symptom was specific
+to `slim-apply`.
+
+The fix (one line) double-quotes the entire description string.
+`copilot plugin upgrade shinyay/tokopt-skills` brings v0.2.1 in; verify
+with `/skills list` showing all 9 entries under the appropriate group
+(`project:`, `personal-copilot:`, or `plugin:`).
+
+This was **not** a Copilot CLI bug; the loader's behaviour was correct.
 
 ### 3. Namespace collision risk in `/skills list`
 
