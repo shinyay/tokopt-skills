@@ -210,6 +210,17 @@ with `/skills list` showing all 9 entries under the appropriate group
 
 This was **not** a Copilot CLI bug; the loader's behaviour was correct.
 
+To prevent regressions, every push and pull request now runs
+`scripts/validate_frontmatter.py` via the `validate-frontmatter` GitHub
+Actions workflow. It strict-parses each `SKILL.md` / `*.agent.md`
+frontmatter with PyYAML and fails the build on any parse error, missing
+`name`/`description`, or name/path mismatch. Run it locally before
+opening a PR:
+
+```bash
+python scripts/validate_frontmatter.py
+```
+
 ### 3. Namespace collision risk in `/skills list`
 
 The CLI installs plugins under `_direct/<owner>--<repo>/` (namespace-safe at

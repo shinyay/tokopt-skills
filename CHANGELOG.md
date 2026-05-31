@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **CI: `validate-frontmatter` workflow** — every push and PR now runs
+  `scripts/validate_frontmatter.py`, which strict-parses each
+  `skills/*/SKILL.md` and `agents/*.agent.md` frontmatter with PyYAML
+  and fails on (a) YAML parse errors, (b) missing or empty `name` /
+  `description`, or (c) `name` field not matching the file/dir basename.
+  Regression guard for the v0.2.1 silent-load class of bug.
+
 ## [0.2.1] — 2026-05-31
 
 ### Fixed
