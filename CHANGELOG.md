@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **CI: `skills-listing-smoke` workflow** ([#3](https://github.com/shinyay/tokopt-skills/issues/3)) —
+  every push, PR, and release publish now runs `scripts/validate_inventory.py`,
+  which asserts the static inventory is intact: (a) `plugin.json` matches the
+  expected schema (`name=tokopt-skills`, semver `version`, `skills=["./skills"]`,
+  `agents=["./agents"]`, correct `repository` URL); (b) the 9 expected skill
+  directories all exist under `skills/` with a `SKILL.md` each and no unexpected
+  extras; (c) the 2 expected `*.agent.md` files exist under `agents/` with no
+  unexpected extras; (d) the `prompt-optimizer` dual-surface (skill + agent)
+  remains intact.
+  Degraded scope: does NOT invoke `copilot /skills list` because that command
+  has no documented non-interactive surface as of Copilot CLI 1.0.57. Loader-
+  level smoke test deferred upstream. Complements `validate-frontmatter` which
+  guards file-level YAML correctness; together they catch the silent-load class
+  of bug from two distinct angles.
+
 - **CI: `validate-frontmatter` workflow** — every push and PR now runs
   `scripts/validate_frontmatter.py`, which strict-parses each
   `skills/*/SKILL.md` and `agents/*.agent.md` frontmatter with PyYAML
