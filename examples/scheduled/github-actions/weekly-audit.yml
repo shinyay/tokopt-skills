@@ -1,0 +1,227 @@
+name: tokopt-weekly-audit
+
+# Drop-in weekly token-tax drift detector for repos using tokopt.
+#
+# Runs `tokopt audit . --format=json` on a Monday 08:00 UTC cron, computes
+# the week-over-week delta against a baseline stored in a tracking issue's
+# body, posts the delta as a comment, and (optionally) notifies Slack.
+#
+# First run creates the tracking issue with baseline=0. Subsequent runs
+# parse the baseline from the issue body, compute delta, post comment,
+# update body. No PAT needed; default GITHUB_TOKEN with `issues: write`.
+#
+# IMPORTANT: CI does not need the tokopt-skills Copilot CLI plugin. It uses
+# the tokopt CLI binary directly. The plugin is only for interactive Copilot
+# workflows on developer machines.
+#
+# One-time setup before first run:
+#   gh label create tokopt-weekly-audit --color FBCA04 \
+#     --description "Tracking issue for tokopt weekly audit drift"
+#
+# Optional: add SLACK_WEBHOOK_URL repo secret to enable Slack notifications.
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'   # Monday 08:00 UTC. crontab.guru helps.
+  workflow_dispatch:       # Manual trigger from Actions tab
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  TOKOPT_VERSION: ''        # empty = latest. Pin (e.g. v0.4.0) for reproducible baseline.
+  ISSUE_LABEL: tokopt-weekly-audit
+  ISSUE_TITLE: 'tokopt weekly audit'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install tokopt
+        run: |
+          if [ -n "$TOKOPT_VERSION" ]; then
+            curl -fsSL https://raw.githubusercontent.com/shinyay/tokopt/main/scripts/install.sh \
+              | sh -s -- --version "$TOKOPT_VERSION"
+          else
+            curl -fsSL https://raw.githubusercontent.com/shinyay/tokopt/main/scripts/install.sh | sh
+          fi
+          tokopt --version
+
+      - name: Run audit
+        id: audit
+        run: |
+          tokopt audit . --format=json > audit.json
+          TOTAL=$(jq '[.files[].tokens] | add // 0' audit.json)
+          ALWAYS_ON=$(jq '[.files[] | select(.scope == "always-on") | .tokens] | add // 0' audit.json)
+          CONDITIONAL=$(jq '[.files[] | select(.scope == "conditional") | .tokens] | add // 0' audit.json)
+          ON_DEMAND=$(jq '[.files[] | select(.scope == "on-demand") | .tokens] | add // 0' audit.json)
+          ALWAYS_ON_COUNT=$(jq '[.files[] | select(.scope == "always-on")] | length' audit.json)
+          CONDITIONAL_COUNT=$(jq '[.files[] | select(.scope == "conditional")] | length' audit.json)
+          ON_DEMAND_COUNT=$(jq '[.files[] | select(.scope == "on-demand")] | length' audit.json)
+          {
+            echo "total=$TOTAL"
+            echo "always_on=$ALWAYS_ON"
+            echo "conditional=$CONDITIONAL"
+            echo "on_demand=$ON_DEMAND"
+            echo "always_on_count=$ALWAYS_ON_COUNT"
+            echo "conditional_count=$CONDITIONAL_COUNT"
+            echo "on_demand_count=$ON_DEMAND_COUNT"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Top 5 files by tokens (always-on + conditional)
+        id: top5
+        run: |
+          {
+            echo 'top5<<TOKOPT_EOF'
+            jq -r '
+              [.files[] | select(.scope == "always-on" or .scope == "conditional")]
+              | sort_by(-.tokens)[:5]
+              | .[]
+              | "- `\(.path)` — \(.tokens) tokens (\(.scope))"
+            ' audit.json
+            echo 'TOKOPT_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Find or create tracking issue + update baseline
+        id: track
+        uses: actions/github-script@v7
+        env:
+          TOTAL: ${{ steps.audit.outputs.total }}
+          ALWAYS_ON: ${{ steps.audit.outputs.always_on }}
+          CONDITIONAL: ${{ steps.audit.outputs.conditional }}
+          ON_DEMAND: ${{ steps.audit.outputs.on_demand }}
+          ALWAYS_ON_COUNT: ${{ steps.audit.outputs.always_on_count }}
+          CONDITIONAL_COUNT: ${{ steps.audit.outputs.conditional_count }}
+          ON_DEMAND_COUNT: ${{ steps.audit.outputs.on_demand_count }}
+          TOP5: ${{ steps.top5.outputs.top5 }}
+        with:
+          script: |
+            const label = process.env.ISSUE_LABEL || 'tokopt-weekly-audit';
+            const title = process.env.ISSUE_TITLE || 'tokopt weekly audit';
+            const total = parseInt(process.env.TOTAL, 10) || 0;
+            const alwaysOn = parseInt(process.env.ALWAYS_ON, 10) || 0;
+            const conditional = parseInt(process.env.CONDITIONAL, 10) || 0;
+            const onDemand = parseInt(process.env.ON_DEMAND, 10) || 0;
+            const alwaysOnCount = parseInt(process.env.ALWAYS_ON_COUNT, 10) || 0;
+            const conditionalCount = parseInt(process.env.CONDITIONAL_COUNT, 10) || 0;
+            const onDemandCount = parseInt(process.env.ON_DEMAND_COUNT, 10) || 0;
+            const top5 = process.env.TOP5 || '_(no files)_';
+            const today = new Date().toISOString().slice(0, 10);
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+
+            // Find existing tracking issue by label. Pagination-safe; first match wins.
+            const search = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: label,
+              state: 'open',
+              per_page: 10,
+            });
+            let issue = search.data[0];
+
+            // First-run path: create issue with baseline=0
+            if (!issue) {
+              const initialBody = [
+                `<!-- tokopt-baseline: 0 -->`,
+                `<!-- tokopt-last-run: ${new Date().toISOString()} -->`,
+                ``,
+                `## tokopt always-on token tax`,
+                ``,
+                `Updated every Monday 08:00 UTC by \`.github/workflows/tokopt-weekly-audit.yml\`.`,
+                ``,
+                `**Current baseline**: 0 tokens (first run pending)`,
+                ``,
+                `See the most recent comment for this week's delta and breakdown.`,
+              ].join('\n');
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body: initialBody,
+                labels: [label],
+              });
+              issue = created.data;
+              core.info(`Created tracking issue #${issue.number}`);
+            }
+
+            // Parse previous baseline from issue body
+            const baselineMatch = (issue.body || '').match(/<!--\s*tokopt-baseline:\s*(-?\d+)\s*-->/);
+            const previous = baselineMatch ? parseInt(baselineMatch[1], 10) : 0;
+            const isFirstRun = !baselineMatch || previous === 0;
+            const delta = total - previous;
+            const pct = previous > 0 ? ((delta / previous) * 100).toFixed(1) : '—';
+            const deltaText = isFirstRun
+              ? '**first run — no baseline**'
+              : `**${delta >= 0 ? '+' : ''}${delta} tokens** (${pct === '—' ? '—' : (delta >= 0 ? '+' : '') + pct + '%'})`;
+
+            // Post weekly comment
+            const commentBody = [
+              `### Weekly audit — ${today}`,
+              ``,
+              `**Total**: ${total} tokens (delta from last run: ${deltaText})`,
+              ``,
+              `| Scope | Tokens | Files |`,
+              `|---|---:|---:|`,
+              `| always-on | ${alwaysOn} | ${alwaysOnCount} |`,
+              `| conditional | ${conditional} | ${conditionalCount} |`,
+              `| on-demand | ${onDemand} | ${onDemandCount} |`,
+              ``,
+              `Top 5 files by tokens (always-on + conditional):`,
+              top5,
+              ``,
+              `[workflow run](${runUrl})`,
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: commentBody,
+            });
+
+            // Update issue body with new baseline (overwrite — idempotent)
+            const newBody = [
+              `<!-- tokopt-baseline: ${total} -->`,
+              `<!-- tokopt-last-run: ${new Date().toISOString()} -->`,
+              ``,
+              `## tokopt always-on token tax`,
+              ``,
+              `Updated every Monday 08:00 UTC by \`.github/workflows/tokopt-weekly-audit.yml\`.`,
+              ``,
+              `**Current baseline**: ${total} tokens`,
+              ``,
+              `See the most recent comment for this week's delta and breakdown.`,
+            ].join('\n');
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: newBody,
+            });
+
+            // Expose values to subsequent steps (e.g., Slack notify)
+            core.setOutput('issue_number', issue.number);
+            core.setOutput('issue_url', issue.html_url);
+            core.setOutput('delta', delta);
+            core.setOutput('delta_text', deltaText);
+            core.setOutput('is_first_run', isFirstRun ? 'true' : 'false');
+
+      - name: Notify Slack (optional)
+        if: env.SLACK_WEBHOOK_URL != ''
+        continue-on-error: true
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TOTAL: ${{ steps.audit.outputs.total }}
+          DELTA_TEXT: ${{ steps.track.outputs.delta_text }}
+          ISSUE_URL: ${{ steps.track.outputs.issue_url }}
+        run: |
+          # Strip Markdown emphasis from delta_text for Slack body
+          PLAIN_DELTA=$(echo "$DELTA_TEXT" | sed 's/\*\*//g')
+          PAYLOAD=$(jq -n \
+            --arg text "tokopt weekly audit: ${TOTAL} tokens (${PLAIN_DELTA}) — ${ISSUE_URL}" \
+            '{text: $text}')
+          curl -sS -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            "$SLACK_WEBHOOK_URL"
