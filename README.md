@@ -128,6 +128,34 @@ CI uses the `tokopt` binary directly — **the Copilot CLI plugin is not require
 
 ---
 
+## 📅 Catch slow-creeping drift (scheduled)
+
+PR-time CI catches a single bad commit; it doesn't catch a SKILL.md that grows 5% per week as a team adds examples. The [`examples/scheduled/`](examples/scheduled/) recipe ships a **weekly audit workflow**: a Monday cron runs `tokopt audit`, finds-or-creates a single tracking issue (idempotent via label), posts a delta against last week's baseline (stored in the issue body), and optionally pings Slack:
+
+```bash
+mkdir -p /path/to/your-repo/.github/workflows
+cp examples/scheduled/github-actions/weekly-audit.yml \
+   /path/to/your-repo/.github/workflows/
+```
+
+See [`examples/scheduled/README.md`](examples/scheduled/README.md) for cron tuning, label setup, Slack opt-in, and the `<!-- tokopt-baseline: N -->` issue-body convention.
+
+---
+
+## 🧵 Run `slim` / `detect` / leaderboard across many files
+
+Single-file `tokopt slim` is interactive and per-file by design. For monorepos, organizations, or one-off org-wide audits — where you want to **preview slim** across hundreds of customization files, **scan multiple repos** for anti-patterns, or rank the **top-N worst offenders** — see [`examples/batch/`](examples/batch/):
+
+| Script | What it does |
+|---|---|
+| [`slim-all.sh`](examples/batch/slim-all.sh) | `xargs -P` parallel `tokopt slim --input <file>` over every customization file under a root → JSONL preview |
+| [`detect-all.sh`](examples/batch/detect-all.sh) | Run `tokopt detect` across one or more root directories in parallel → JSONL (one record per root) |
+| [`worst-offenders.sh`](examples/batch/worst-offenders.sh) | Sorted top-N leaderboard of files by token count → plain-text table |
+
+All scripts are filename-with-spaces safe (`find -print0 | xargs -0`), respect `TOKOPT_BATCH_PARALLEL`, and use a 3-tier exit code (0 / 1 / 2). See [`examples/batch/README.md`](examples/batch/README.md) for prerequisites, post-processing recipes, and customization tips.
+
+---
+
 ## 💸 Token cost of the plugin itself
 
 This plugin's own footprint, measured with `tokopt audit`:

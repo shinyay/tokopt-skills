@@ -9,6 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Docs/examples: `examples/scheduled/` weekly drift detection recipe**
+  ([#9](https://github.com/shinyay/tokopt-skills/issues/9)) —
+  drop-in `weekly-audit.yml` workflow runs `tokopt audit . --format=json`
+  on a Monday 08:00 UTC cron, finds-or-creates a single tracking issue
+  via `actions/github-script@v7` (idempotent via label `tokopt-weekly-audit`),
+  computes a delta against a baseline stored in the issue body
+  (`<!-- tokopt-baseline: N -->`), posts a weekly comment, and optionally
+  notifies Slack via `SLACK_WEBHOOK_URL` secret. Closes the slow-creeping-
+  drift gap that PR-time `examples/ci/` cannot see (a SKILL.md growing 5%
+  per week is invisible until it crosses an arbitrary threshold). Living
+  under `examples/` (not `.github/workflows/`) means GitHub Actions will
+  NOT auto-execute the template; users copy it into their own workflows
+  directory.
+
+- **Docs/examples: `examples/batch/` multi-file recipes**
+  ([#8](https://github.com/shinyay/tokopt-skills/issues/8)) —
+  three POSIX shell scripts for org-wide / monorepo workflows that the
+  interactive single-file CLI surface doesn't cover:
+  (a) **`slim-all.sh`** — `xargs -P` parallel `tokopt slim --input <file>
+  --format=json` over every customization file under a root (matching the
+  `tokopt-vscode` `COPILOT_CUSTOMIZATION_LANGS` set: `SKILL.md`,
+  `*.agent.md`, `*.prompt.md`, `*.chatmode.md`, `copilot-instructions.md`,
+  `AGENTS.md`, `CLAUDE.md`), emitting JSONL via `jq -c .`;
+  (b) **`detect-all.sh`** — same shape but per-DIRECTORY (because `tokopt
+  detect` is directory-walking, not file-accepting), splicing each root
+  into the JSON via `jq` so records are self-describing;
+  (c) **`worst-offenders.sh`** — `tokopt audit . --format=json` piped
+  through `jq` sort/head/awk to produce a top-N leaderboard table.
+  All scripts use `find -print0 | xargs -0` for filename-with-spaces
+  safety, default `TOKOPT_BATCH_PARALLEL=$(nproc)` with env override, and
+  share a 3-tier exit code semantic (0=clean, 1=some failed, 2=majority
+  failed). Closes the "I have 50 .agent.md files across an org" gap.
+
 - **CI: `skills-listing-smoke` workflow** ([#3](https://github.com/shinyay/tokopt-skills/issues/3)) —
   every push, PR, and release publish now runs `scripts/validate_inventory.py`,
   which asserts the static inventory is intact: (a) `plugin.json` matches the
