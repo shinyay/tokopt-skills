@@ -23,7 +23,36 @@ If `tokopt` is on PATH, use it directly. Otherwise run from the repo:
 (cd tools/tokopt && go run ./cmd/tokopt anatomy ...)
 ```
 
-Either point at files for each segment:
+### Auto-classify a single customization file (preferred, `tokopt v0.6.0+`)
+
+For Copilot/agent files with recognisable shape — `*.agent.md`,
+`SKILL.md`, `copilot-instructions.md`, `AGENTS.md`, `*.instructions.md`,
+`*.chatmode.md`, `*.prompt.md`, MCP configs — pass the file positionally
+and `tokopt anatomy` will auto-classify it into the right segment:
+
+```bash
+tokopt anatomy ./.github/agents/my-agent.agent.md
+# Output prepends: ↑ inferred segment: user (rule: *.agent.md → conditional → agent body)
+#                  …followed by the standard per-segment breakdown.
+```
+
+JSON mode also emits `inferred_segment` and `inference_rule` fields
+(both `omitempty` — absent for flag-driven invocations):
+
+```bash
+tokopt anatomy ./.github/skills/foo/SKILL.md --format=json
+# {…, "inferred_segment": "retrieved",
+#      "inference_rule": "SKILL.md → on-demand → retrieved skill context"}
+```
+
+If the file's shape is unrecognised, the command exits non-zero with an
+`UNRECOGNIZED_SHAPE` error envelope and suggests the explicit fallback
+form below.
+
+### For multi-segment composition (explicit flags)
+
+When you have separate files per segment — e.g. you're staging a full
+prompt for before/after measurement — pass each segment via its flag:
 
 ```bash
 tokopt anatomy \
@@ -41,6 +70,10 @@ tokopt anatomy \
 ```bash
 echo '{"system":"…","always-on":"…","user":"…"}' | tokopt --format json anatomy --json -
 ```
+
+The positional form (`tokopt anatomy <file>`) and flag form
+(`tokopt anatomy --user <file>`) are mutually exclusive — combining them
+returns a clear error pointing at whichever form best fits the use case.
 
 ## How to read the output
 

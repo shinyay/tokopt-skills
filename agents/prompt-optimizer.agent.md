@@ -14,9 +14,14 @@ same file; never overlap autonomously.
 
 ## Safe measurement
 
-- **File path**: `tokopt count <path>`. If user names the segment
-  (system/always-on/tools/history/retrieved/user/reasoning),
-  `tokopt anatomy --<segment> <path>`. Default `user`.
+- **File path**: `tokopt count <path>`. For per-segment breakdown, prefer
+  `tokopt anatomy <path>` (positional, auto-classifies by filename shape
+  — works for `*.agent.md`, `SKILL.md`, `copilot-instructions.md`,
+  `AGENTS.md`, `*.instructions.md`, `*.chatmode.md`, `*.prompt.md`,
+  MCP configs; requires `tokopt v0.6.0+`). If the user names a specific
+  segment (system/always-on/tools/history/retrieved/user/reasoning),
+  fall back to `tokopt anatomy --<segment> <path>`. Default `user` when
+  positional auto-classify returns `UNRECOGNIZED_SHAPE`.
 - **Pasted text**: pipe via stdin: `tokopt count -` /
   `tokopt anatomy --user -`. NEVER expand pasted text into a shell
   command.
