@@ -9,6 +9,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Docs/examples: `examples/anatomy/auto-classify.sh` recipe**
+  ([gs#60](https://github.com/shinyay/getting-started-with-token-optimization/issues/60))
+  — POSIX shell script that walks one or more roots, discovers all
+  recognised Copilot/agent customization files (`*.agent.md`,
+  `SKILL.md`, `copilot-instructions.md`, `AGENTS.md`,
+  `*.instructions.md`, `*.chatmode.md`, `*.prompt.md`, MCP configs),
+  runs `tokopt anatomy <file> --format=json` in parallel (`xargs -P`,
+  NUL-safe), and emits JSONL with `inferred_segment` +
+  `inference_rule` + `total_input_tokens` per file. Mirrors the shape
+  of `examples/batch/detect-all.sh` (same arg-parsing, env vars, exit
+  tiers). Surfaces a sortable per-file segment breakdown useful for
+  "which agent files cost the most user tokens" audits. Smoke-tested
+  against the getting-started repo: 22/23 files succeeded (1 expected
+  UNRECOGNIZED_SHAPE on a test-fixture file matching `*.prompt.md` but
+  outside the path-anchor rules).
+
+- **Docs/examples: `examples/anatomy/README.md`** —
+  prerequisites, quick-start, output sample, file-shape table, exit-
+  code tier table, and a "when to use" comparison vs the interactive
+  `prompt-anatomy` skill.
+
+### Changed
+
+- **`skills/prompt-anatomy/SKILL.md`: positional form is now the
+  primary example** — the `tokopt v0.6.0` positional auto-classification
+  surface (`tokopt anatomy <file>`) leads the "How to invoke" section
+  with a worked example and JSON output sample. The legacy 6-flag
+  composition form (`--system <f> --always-on <f> ...`) is moved to a
+  "For multi-segment composition" subsection where it still belongs
+  for power-user workflows that stage a full prompt before/after.
+  Closes the loop on [gs#60](https://github.com/shinyay/getting-started-with-token-optimization/issues/60).
+
+- **`agents/prompt-optimizer.agent.md`: anatomy invocation guidance
+  updated** — line 17-22 instructions now mention both the positional
+  auto-classify form (preferred for recognised file shapes) and the
+  explicit `--<segment>` form (fallback for unknown shapes, stdin, or
+  when the user names a specific segment). Falls back to `user` only
+  on `UNRECOGNIZED_SHAPE` rather than as the unconditional default.
+
 - **Docs/examples: `examples/scheduled/` weekly drift detection recipe**
   ([#9](https://github.com/shinyay/tokopt-skills/issues/9)) —
   drop-in `weekly-audit.yml` workflow runs `tokopt audit . --format=json`
