@@ -35,6 +35,21 @@ To express the always-on tax as a percentage of a chosen window size
 tokopt --reference-window 100000 audit <repo-root>
 ```
 
+To also surface **dynamically referenced files** that an agent or
+coordinator names in its body but the static classifier didn't catch
+(opt-in, default OFF — best-effort path detection only, may not load):
+
+```bash
+tokopt audit <repo-root> --follow-references
+```
+
+Added in tokopt v0.7.0. Most useful on coordinator-style configs where
+`.github/instructions/*.md` files are mentioned by name from a
+`*.agent.md` body without `applyTo:` frontmatter; measured a ~60%
+under-count gap on real-world configs. Output adds a "Dynamically
+referenced" subsection listing each resolved target and the source
+that named it.
+
 ## How to read the output
 
 Three buckets — read them in this order:

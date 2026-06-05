@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`skills/token-audit/SKILL.md`: `--follow-references` flag mention**
+  ([gs#63](https://github.com/shinyay/getting-started-with-token-optimization/issues/63))
+  — adds a one-paragraph subsection under "How to invoke" that
+  documents the new `tokopt audit --follow-references` opt-in flag
+  (added in tokopt v0.7.0). Calls out the ~60% under-count gap
+  measured on coordinator-style configs (`.github/instructions/*.md`
+  files referenced by name from a `*.agent.md` body without
+  `applyTo:` frontmatter). Best-effort path detection — explicitly
+  labelled as "may not load". Skill body still works against tokopt
+  v0.6.x for the existing flow; the new section just becomes
+  invocable when the user has v0.7.0+ installed.
+
 - **Docs/examples: `examples/anatomy/auto-classify.sh` recipe**
   ([gs#60](https://github.com/shinyay/getting-started-with-token-optimization/issues/60))
   — POSIX shell script that walks one or more roots, discovers all
