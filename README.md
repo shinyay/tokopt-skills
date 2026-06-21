@@ -176,6 +176,11 @@ always-on   0 tokens       (no copilot-instructions.md installed by this plugin)
 - **`tokopt` binary** (installed via the install.sh in Step 1) — required at runtime by every skill and agent
 - Linux / macOS / Windows (WSL)
 
+For which `tokopt` CLI version each skill needs, see the canonical
+[COMPATIBILITY.md](https://github.com/shinyay/tokopt/blob/main/COMPATIBILITY.md)
+and [VERSIONING.md](https://github.com/shinyay/tokopt/blob/main/VERSIONING.md)
+in the CLI repo.
+
 ---
 
 ## ⚠️ Known limitations
