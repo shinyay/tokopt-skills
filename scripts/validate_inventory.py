@@ -47,6 +47,7 @@ EXPECTED_SKILLS = {
     "antipattern-scan",
     "heavy-tail",
     "hygiene-coach",
+    "model-cost-compare",
     "prompt-anatomy",
     "prompt-optimizer",
     "slim-apply",
