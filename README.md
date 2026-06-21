@@ -1,6 +1,6 @@
 # tokopt-skills
 
-> **Copilot CLI plugin** — 9 token-optimization skills + 2 agents for the [`tokopt`](https://github.com/shinyay/tokopt) CLI.
+> **Copilot CLI plugin** — 10 token-optimization skills + 2 agents for the [`tokopt`](https://github.com/shinyay/tokopt) CLI.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Plugin format](https://img.shields.io/badge/format-Copilot%20CLI%20plugin-blue)](https://docs.github.com/copilot/how-tos/copilot-cli)
@@ -72,6 +72,7 @@ Full per-shell guide (incl. macOS bash-completion v2 caveat and `--no-descriptio
 | `prompt-anatomy` | "decompose this prompt", "7 segments" | `tokopt anatomy` |
 | `antipattern-scan` | "find token antipatterns" | `tokopt detect` |
 | `heavy-tail` | "find longest prompts", "p95 cost" | `tokopt tail` |
+| `model-cost-compare` | "which model is cheapest for this repo?", "compare model cost" | `tokopt report --by-model` |
 | `slim-suggest` | "show what could be slimmed" | `tokopt slim` (read-only) |
 | `slim-apply` | "apply the slim", "compact this transcript" | `tokopt slim --write` / `chat-compact` |
 | `slim-rewind` | "undo the last slim", "restore" | `tokopt rewind` |
@@ -269,7 +270,7 @@ matcher may then pick either at random.
 
 **Mitigation** — until upstream qualifies skill names in the listing, prefer
 the explicit agent invocation (`@token-doctor`, `@prompt-optimizer`) when you
-need a guarantee about which implementation runs. The 9 skill names are
+need a guarantee about which implementation runs. The 10 skill names are
 intentionally specific (`tokopt-` style prefixes were considered and rejected
 to keep natural-language matching strong), so practical collisions are rare
 today but possible as the plugin ecosystem grows.
@@ -282,7 +283,7 @@ These skills + agents started life inside [`shinyay/getting-started-with-token-o
 
 `tokopt-skills` is the **CLI distribution package** extracted from that work — small, focused, and `copilot plugin install`-able. The tutorial repository remains the place to learn _why_ and _how_ each skill works; this repository is the place to just _use_ them.
 
-> **VS Code Copilot Chat user?** See the companion package [`shinyay/tokopt-vscode`](https://github.com/shinyay/tokopt-vscode) — same 9 skills + 2 agents in `.github/agents/` + `.github/skills/` layout, plus 4 `.prompt.md` slash-command wrappers (`/token-audit`, `/prompt-anatomy`, `/slim-suggest`, `/slim-apply`). One install script handles workspace OR user-profile scope.
+> **VS Code Copilot Chat user?** See the companion package [`shinyay/tokopt-vscode`](https://github.com/shinyay/tokopt-vscode) — the core skills + 2 agents in `.github/agents/` + `.github/skills/` layout, plus 4 `.prompt.md` slash-command wrappers (`/token-audit`, `/prompt-anatomy`, `/slim-suggest`, `/slim-apply`). One install script handles workspace OR user-profile scope. (The `model-cost-compare` skill is currently CLI-plugin only; the VS Code package mirrors cost comparison through its dashboard view.)
 
 ---
 

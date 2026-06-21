@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`skills/model-cost-compare/SKILL.md`: new skill** (skills#22, Wave 1
+  "Model Cost Intelligence") — wraps `tokopt report --by-model` so Copilot
+  CLI can answer "which model is cheapest for this repo?" in natural
+  language. Runs the audit once, then ranks **every model in the rate
+  card** by the repo's projected AI Credit cost (cheapest first), with the
+  `empirical` vs `catalog` basis distinction and the standard honesty
+  guardrails (report what the CLI measured; treat catalog rates as a
+  list-price upper bound). Requires tokopt CLI ≥ 0.10.0. Brings the
+  on-demand skill count to **ten**; `plugin.json` description and the
+  static inventory check updated accordingly.
+
 - **`skills/token-audit/SKILL.md`: `--follow-references` flag mention**
   ([gs#63](https://github.com/shinyay/getting-started-with-token-optimization/issues/63))
   — adds a one-paragraph subsection under "How to invoke" that
