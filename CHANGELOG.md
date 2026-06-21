@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-21
+
 ### Added
 
 - **`skills/model-cost-compare/SKILL.md`: new skill** (skills#22, Wave 1
@@ -108,7 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   every push, PR, and release publish now runs `scripts/validate_inventory.py`,
   which asserts the static inventory is intact: (a) `plugin.json` matches the
   expected schema (`name=tokopt-skills`, semver `version`, `skills=["./skills"]`,
-  `agents=["./agents"]`, correct `repository` URL); (b) the 9 expected skill
+  `agents=["./agents"]`, correct `repository` URL); (b) the expected skill
   directories all exist under `skills/` with a `SKILL.md` each and no unexpected
   extras; (c) the 2 expected `*.agent.md` files exist under `agents/` with no
   unexpected extras; (d) the `prompt-optimizer` dual-surface (skill + agent)
@@ -271,7 +273,8 @@ Copilot CLI plugin install path without cloning the (much larger)
 
 This file follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions follow [Semantic Versioning](https://semver.org).
 
-[Unreleased]: https://github.com/shinyay/tokopt-skills/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/shinyay/tokopt-skills/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/shinyay/tokopt-skills/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/shinyay/tokopt-skills/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/shinyay/tokopt-skills/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/shinyay/tokopt-skills/releases/tag/v0.1.0

@@ -2,7 +2,7 @@ name: skills-listing-smoke
 
 # DEGRADED SCOPE — see scripts/validate_inventory.py header for details.
 #
-# This workflow asserts the STATIC inventory (9 skills + 2 agents + plugin.json
+# This workflow asserts the STATIC inventory (skills + agents + plugin.json
 # schema) is intact. It does NOT invoke `copilot /skills list` because that
 # command has no documented non-interactive surface as of Copilot CLI 1.0.57,
 # and authenticating in CI would require a long-lived token.
@@ -37,5 +37,5 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Validate inventory (9 skills + 2 agents + plugin.json schema)
+      - name: Validate inventory (skills + agents + plugin.json schema)
         run: python scripts/validate_inventory.py

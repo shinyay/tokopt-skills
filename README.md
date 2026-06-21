@@ -64,7 +64,7 @@ Full per-shell guide (incl. macOS bash-completion v2 caveat and `--no-descriptio
 | `@token-doctor` | Full optimisation orchestrator: measure → diagnose → propose → apply → re-measure | `bash`, `edit`, `view` |
 | `@prompt-optimizer` | Propose-only critic for a single prompt — never edits files | `bash`, `view` |
 
-### 🧩 9 Skills (loaded on demand by description match)
+### 🧩 10 Skills (loaded on demand by description match)
 
 | Skill | When it loads | Calls |
 |---|---|---|
@@ -162,8 +162,8 @@ All scripts are filename-with-spaces safe (`find -print0 | xargs -0`), respect `
 This plugin's own footprint, measured with `tokopt audit`:
 
 ```text
-on-demand   6,301 tokens   (9 SKILL.md files — zero cost until matched)
-conditional 2,094 tokens   (2 agent files — paid per step only when invoked)
+on-demand   7,885 tokens   (10 SKILL.md files — zero cost until matched)
+conditional 2,202 tokens   (2 agent files — paid per step only when invoked)
 always-on   0 tokens       (no copilot-instructions.md installed by this plugin)
 ```
 
