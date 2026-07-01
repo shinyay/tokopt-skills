@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **slim skills now guide Japanese compression (skills#24)** — `slim-suggest`,
+  `slim-apply`, and `hygiene-coach` previously told the agent to run
+  `tokopt slim` with no Japanese flag, so a Japanese file previewed at 0 %.
+  `slim-suggest` now instructs: when the JSON reports `language:"ja"` and
+  `saved_tokens:0`, re-run with **`--enable-jp-idiom`** (a no-op on
+  non-Japanese input; ~15 % on idiom-heavy prose) and report those numbers.
+  `slim-apply` and `hygiene-coach` document the matching **flag parity** (the
+  apply must reuse `--enable-jp-idiom` from the preview). All three note that
+  **customization assets can't be idiom-compressed** (the customization
+  pipeline ignores the Japanese stages) and that `--enable-nexus-ja` needs a
+  kagome build. The skill keys off the structured `language` field because the
+  CLI's stderr hint is suppressed under `--format json`. Parallel to
+  [tokopt-vscode#45](https://github.com/shinyay/tokopt-vscode/issues/45).
+
 ## [0.3.0] - 2026-06-21
 
 ### Added

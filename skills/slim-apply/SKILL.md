@@ -68,6 +68,25 @@ The JSON's `profile_used` field is the audit signal: it must be
 identical (same string, or absent in both) between preview and
 apply for the user-quoted delta to be honest.
 
+## Japanese flag pass-through
+
+The same parity rule applies to `--enable-jp-idiom`. If `slim-suggest`
+previewed a Japanese file with `--enable-jp-idiom` (the flag it adds when the
+JSON reports `language:"ja"` and 0 savings), the matching `slim-apply` MUST
+pass `--enable-jp-idiom` too — otherwise the applied bytes differ from the
+reviewed preview.
+
+```bash
+# preview (Japanese prose)
+tokopt slim --input docs/guide.ja.md --enable-jp-idiom --format json
+# apply (same flag)
+tokopt slim --input docs/guide.ja.md --enable-jp-idiom --apply --format json
+```
+
+`--enable-jp-idiom` is a no-op on non-Japanese input, so a mismatch only
+matters for Japanese files. `--enable-nexus-ja` (kagome build only) follows
+the same parity rule if it was used.
+
 ## Customization-aware mode (Step 10b)
 
 If the target is a customization asset (`SKILL.md`, `*.agent.md`,

@@ -66,6 +66,14 @@ estimate.
   subsequent slim-apply MUST pass the same `--profile NAME`.
   Verify via the JSON's `profile_used` field; mismatch breaks
   attribution and the slim-apply safety contract.
+- For Japanese files, the single-file re-run reports `language:"ja"`
+  with `saved_tokens:0` under the default pipeline. Add
+  `--enable-jp-idiom` (no-op on non-Japanese) so the mechanical batch
+  actually compresses, and pass the SAME flag to the subsequent
+  slim-apply (flag parity, like `--profile`). Note: customization
+  assets (`AGENTS.md`, `copilot-instructions.md`, `*.agent.md`,
+  `SKILL.md`) can't be idiom-compressed — advise `tokopt detect` there
+  instead of a mechanical fix.
 - For wording-level critique on a single prompt (vs structural or
   mechanical changes within this loop), refer the user to
   `@prompt-optimizer` — a propose-only one-shot review distinct
