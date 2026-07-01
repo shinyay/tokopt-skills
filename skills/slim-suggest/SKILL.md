@@ -74,6 +74,37 @@ between preview and apply breaks the safety contract.
 - single: `original_tokens` / `compressed_tokens` / `saved_percent`
 - batch: `summary.saved_tokens` / `summary.saved_percent_overall`
 - `stage_breakdown[]` shows which stage saved what
+- `language` — Cortex's language hint (`en` / `ja` / `""`). Drives the
+  Japanese path below.
+
+## Japanese input
+
+By default slim does NOT compress Japanese prose, so a Japanese file
+previews at **0 %**. When the JSON reports `language:"ja"` **and**
+`saved_tokens` is `0`, re-run once with `--enable-jp-idiom` and report
+THOSE numbers instead:
+
+```bash
+tokopt slim --input <file> --enable-jp-idiom --format json
+```
+
+- `--enable-jp-idiom` contracts Japanese verbal-noun idioms
+  (`〜することができます` → `〜できます`); ~15 % on idiom-heavy prose. It is
+  a **no-op on non-Japanese input**, so it is always safe to add.
+- The CLI also prints a one-line hint to stderr in this case, but it is
+  suppressed under `--format json` — rely on the `language` field, not the
+  hint.
+- `--enable-nexus-ja` (は/も particle trimming) needs a `-tags nexusja`
+  **kagome build**. Do NOT assume it exists; only mention it as an optional
+  extra the user can try if their tokopt was built with it.
+- **Customization assets can NOT be idiom-compressed.** For `AGENTS.md`,
+  `.github/copilot-instructions.md`, `*.agent.md`, `SKILL.md`, etc. the
+  customization pipeline ignores the Japanese stages, so `--enable-jp-idiom`
+  stays at 0 %. Do not promise savings there — suggest `tokopt detect`
+  instead.
+- **Flag parity**: if you preview with `--enable-jp-idiom` and the user then
+  applies, `slim-apply` MUST pass the same `--enable-jp-idiom` (the
+  preview↔apply content must match — same rule as `--profile`).
 
 ## Error handling
 
