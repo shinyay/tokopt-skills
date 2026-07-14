@@ -19,6 +19,10 @@ curl -fsSL https://raw.githubusercontent.com/shinyay/tokopt/main/scripts/install
 
 Verify: `tokopt --version`
 
+Current plugin release **0.3.2** is developed against tokopt CLI **0.18.0**.
+Older binaries degrade by capability: `model-cost-compare` requires CLI
+**0.10.0+**, while `slim --apply` and `rewind` require **0.7.0+**.
+
 ### Step 2 — Install this plugin
 
 ```bash
@@ -162,7 +166,7 @@ All scripts are filename-with-spaces safe (`find -print0 | xargs -0`), respect `
 This plugin's own footprint, measured with `tokopt audit`:
 
 ```text
-on-demand   7,885 tokens   (10 SKILL.md files — zero cost until matched)
+on-demand   8,662 tokens   (10 SKILL.md files — zero cost until matched)
 conditional 2,202 tokens   (2 agent files — paid per step only when invoked)
 always-on   0 tokens       (no copilot-instructions.md installed by this plugin)
 ```
